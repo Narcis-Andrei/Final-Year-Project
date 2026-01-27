@@ -2,34 +2,41 @@ using UnityEngine;
 
 public class WheelchairLift : MonoBehaviour
 {
-    public void RequestLiftUp()
-    {
-        Debug.Log("REMOTE: RequestLiftUp()");
-    }
-
-    public void RequestLiftDown()
-    {
-        Debug.Log("REMOTE: RequestLiftDown()");
-    }
-
-    public void RequestDeploy()
-    {
-        Debug.Log("REMOTE: RequestDeploy()");
-    }
-
-    public void RequestStow()
-    {
-        Debug.Log("REMOTE: RequestStow()");
-    }
+    [SerializeField] private WheelchairLiftSystem lift;
 
     public void OnRemoteButton(RemoteButton.ButtonId id)
     {
+        if (lift == null)
+        {
+            Debug.LogWarning("REMOTE: lift reference not set!");
+            return;
+        }
+
         switch (id)
         {
-            case RemoteButton.ButtonId.TopLeft: RequestDeploy(); break;
-            case RemoteButton.ButtonId.TopRight: RequestStow(); break;
-            case RemoteButton.ButtonId.BottomLeft: RequestLiftDown(); break;
-            case RemoteButton.ButtonId.BottomRight: RequestLiftUp(); break;
+            // Top Left = "Resting top"
+            case RemoteButton.ButtonId.TopLeft:
+                Debug.Log("REMOTE: Resting Top");
+                lift.RequestStowFromBusLevel();
+                break;
+
+            // Bottom Left = "Bus level"
+            case RemoteButton.ButtonId.BottomLeft:
+                Debug.Log("REMOTE: Deploy to BusLevel");
+                lift.RequestDeployToBusLevel();
+                break;
+
+            // Top Right = "Up from floor"
+            case RemoteButton.ButtonId.TopRight:
+                Debug.Log("REMOTE: Raise to BusLevel");
+                lift.RequestRaiseToBusLevel();
+                break;
+
+            // Bottom Right = "Down to floor"
+            case RemoteButton.ButtonId.BottomRight:
+                Debug.Log("REMOTE: Lower to Ground");
+                lift.RequestLowerToGround();
+                break;
         }
     }
 }
