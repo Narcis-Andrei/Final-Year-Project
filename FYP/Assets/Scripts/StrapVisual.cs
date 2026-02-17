@@ -13,8 +13,8 @@ public class StrapVisual : MonoBehaviour
     [SerializeField] private XRSocketInteractor endSocket;
 
     [Header("Look")]
-    [SerializeField] private float strapThickness = 0.015f; // in WORLD meters
-    [SerializeField] private float endOffset = 0.0f;        // in WORLD meters
+    [SerializeField] private float strapThickness = 0.03f; // meters
+    [SerializeField] private float endOffset = 0.0f;
 
     public bool IsConnected { get; private set; }
 
@@ -38,7 +38,8 @@ public class StrapVisual : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (!startAnchor || !strapRoot || !strapMesh || !hookGrab) return;
+        if (!startAnchor || !hookGrab || !strapRoot || !strapMesh)
+            return;
 
         Vector3 a = startAnchor.position;
 
@@ -47,7 +48,8 @@ public class StrapVisual : MonoBehaviour
                 ? hookGrab.transform.position
                 : (endSocket.attachTransform ? endSocket.attachTransform.position : endSocket.transform.position);
 
-        Vector3 dir = b - a;
+        // Apply end offsets (trim)
+        Vector3 dir = (b - a);
         float dist = dir.magnitude;
         if (dist < 0.0001f)
         {
@@ -55,41 +57,36 @@ public class StrapVisual : MonoBehaviour
             return;
         }
 
-        strapRoot.gameObject.SetActive(true);
-
         Vector3 fwd = dir / dist;
-
-        // Apply world-space end offsets
         Vector3 a2 = a + fwd * endOffset;
         Vector3 b2 = b - fwd * endOffset;
 
-        Vector3 finalDir = b2 - a2;
-        float finalDist = finalDir.magnitude;
-        if (finalDist < 0.0001f)
+        if ((b2 - a2).sqrMagnitude < 0.000001f)
         {
             strapRoot.gameObject.SetActive(false);
             return;
         }
 
-        Vector3 finalFwd = finalDir / finalDist;
+        strapRoot.gameObject.SetActive(true);
+        RenderStraightMesh(a2, b2);
+    }
 
-        // Root pinned at the start
+    private void RenderStraightMesh(Vector3 a2, Vector3 b2)
+    {
+        Vector3 finalDir = b2 - a2;
+        float finalDist = finalDir.magnitude;
+        Vector3 finalFwd = finalDir / Mathf.Max(0.0001f, finalDist);
+
         strapRoot.position = a2;
         strapRoot.rotation = Quaternion.LookRotation(finalFwd, startAnchor.up);
 
-        // --- SCALE-SAFE PART ---
-        // Get end point in strapRoot local space.
-        // After the LookRotation, local +Z points toward the end.
         Vector3 endLocal = strapRoot.InverseTransformPoint(b2);
         float lenLocal = Mathf.Max(0.0001f, endLocal.z);
 
-        // Convert desired WORLD thickness to LOCAL thickness
-        // (avoid division by ~0)
         Vector3 lossy = strapRoot.lossyScale;
         float thickLocalX = strapThickness / Mathf.Max(0.0001f, lossy.x);
         float thickLocalY = strapThickness / Mathf.Max(0.0001f, lossy.y);
 
-        // Move mesh so its "start" is at Z=0 and it grows forward only
         strapMesh.localPosition = new Vector3(0f, 0f, lenLocal * 0.5f);
         strapMesh.localRotation = Quaternion.identity;
         strapMesh.localScale = new Vector3(thickLocalX, thickLocalY, lenLocal);
