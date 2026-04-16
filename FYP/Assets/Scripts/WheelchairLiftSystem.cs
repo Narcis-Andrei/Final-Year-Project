@@ -16,18 +16,32 @@ public class WheelchairLiftSystem : MonoBehaviour
 
     [Header("Platform to move")]
     [SerializeField] private Transform platform;
+    [SerializeField] private Rigidbody platformRb;
 
     [Header("Key positions")]
-    [SerializeField] private Transform closedPoint;     // where the platform sits when closed
-    [SerializeField] private Transform busLevelPoint;   // level with bus floor
-    [SerializeField] private Transform groundPoint;     // level with ground
+    [SerializeField] private Transform closedPoint;
+    [SerializeField] private Transform busLevelPoint;
+    [SerializeField] private Transform groundPoint;
 
     [Header("Movement")]
     [SerializeField] private float moveSeconds = 2.0f;
 
     public LiftState State => state;
+    public System.Action<LiftState> OnLiftReachedState;
 
     private Coroutine moveRoutine;
+
+    private void Awake()
+    {
+        if (platformRb == null && platform != null)
+            platformRb = platform.GetComponent<Rigidbody>();
+
+        if (platformRb != null)
+        {
+            platformRb.isKinematic = true;
+            platformRb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
+    }
 
     private bool SetupOK()
     {
@@ -40,43 +54,39 @@ public class WheelchairLiftSystem : MonoBehaviour
         return false;
     }
 
-    // Button 1: Open/deploy and end at bus level
     public bool RequestDeployToBusLevel()
     {
         if (state != LiftState.Stowed) return Deny("Deploy only from Stowed");
         if (!SetupOK()) return Deny("Missing platform/points");
 
-        StartMove(busLevelPoint.position, busLevelPoint.rotation, LiftState.AtBusLevel, "Deploy -> BusLevel");
+        StartMove(busLevelPoint.position, busLevelPoint.rotation, LiftState.AtBusLevel, "Deploy to BusLevel");
         return true;
     }
 
-    // Button 2: Lower from bus level to ground
     public bool RequestLowerToGround()
     {
         if (state != LiftState.AtBusLevel) return Deny("Lower only from BusLevel");
         if (!SetupOK()) return Deny("Missing platform/points");
 
-        StartMove(groundPoint.position, groundPoint.rotation, LiftState.AtGround, "Lower -> Ground");
+        StartMove(groundPoint.position, groundPoint.rotation, LiftState.AtGround, "Lower to Ground");
         return true;
     }
 
-    // Button 3: Raise from ground to bus level
     public bool RequestRaiseToBusLevel()
     {
         if (state != LiftState.AtGround) return Deny("Raise only from Ground");
         if (!SetupOK()) return Deny("Missing platform/points");
 
-        StartMove(busLevelPoint.position, busLevelPoint.rotation, LiftState.AtBusLevel, "Raise -> BusLevel");
+        StartMove(busLevelPoint.position, busLevelPoint.rotation, LiftState.AtBusLevel, "Raise to BusLevel");
         return true;
     }
 
-    // Button 4: Stow from bus level back into bus
     public bool RequestStowFromBusLevel()
     {
-        if (state != LiftState.AtBusLevel) return Deny("Stow only from BusLevel");
+        if (state != LiftState.AtBusLevel) return Deny("Stored only from BusLevel");
         if (!SetupOK()) return Deny("Missing platform/points");
 
-        StartMove(closedPoint.position, closedPoint.rotation, LiftState.Stowed, "BusLevel -> Stow");
+        StartMove(closedPoint.position, closedPoint.rotation, LiftState.Stowed, "BusLevel To Stored");
         return true;
     }
 
@@ -91,25 +101,48 @@ public class WheelchairLiftSystem : MonoBehaviour
         state = LiftState.Moving;
         Debug.Log($"LIFT: {label} (moving)");
 
-        Vector3 startPos = platform.position;
-        Quaternion startRot = platform.rotation;
+        Vector3 startPos = platformRb != null ? platformRb.position : platform.position;
+        Quaternion startRot = platformRb != null ? platformRb.rotation : platform.rotation;
 
-        float t = 0f;
+        float elapsed = 0f;
         float dur = Mathf.Max(0.01f, moveSeconds);
 
-        while (t < 1f)
+        while (elapsed < dur)
         {
-            t += Time.deltaTime / dur;
-            platform.position = Vector3.Lerp(startPos, targetPos, t);
-            platform.rotation = Quaternion.Slerp(startRot, targetRot, t);
-            yield return null;
+            elapsed += Time.fixedDeltaTime;
+            float t = Mathf.Clamp01(elapsed / dur);
+
+            Vector3 nextPos = Vector3.Lerp(startPos, targetPos, t);
+            Quaternion nextRot = Quaternion.Slerp(startRot, targetRot, t);
+
+            if (platformRb != null)
+            {
+                platformRb.MovePosition(nextPos);
+                platformRb.MoveRotation(nextRot);
+            }
+            else
+            {
+                platform.position = nextPos;
+                platform.rotation = nextRot;
+            }
+
+            yield return new WaitForFixedUpdate();
         }
 
-        platform.position = targetPos;
-        platform.rotation = targetRot;
+        if (platformRb != null)
+        {
+            platformRb.MovePosition(targetPos);
+            platformRb.MoveRotation(targetRot);
+        }
+        else
+        {
+            platform.position = targetPos;
+            platform.rotation = targetRot;
+        }
 
         state = endState;
         Debug.Log($"LIFT: Reached {state}");
+        OnLiftReachedState?.Invoke(state);
         moveRoutine = null;
     }
 }

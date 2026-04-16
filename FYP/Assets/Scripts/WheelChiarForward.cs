@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -20,15 +21,19 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
     [SerializeField] private float deadzone = 0.15f;
 
     public enum ForwardAxis { ForwardZ, RightX }
+
     [Header("Which axis is 'forward' for your wheelchair model?")]
     [SerializeField] private ForwardAxis forwardAxis = ForwardAxis.ForwardZ;
 
     [Header("Debug")]
     [SerializeField] private bool logDebug = false;
 
+    public Action OnBothHandsPlaced;
+
     private InputDevice leftDevice;
     private Transform originalParent;
     private bool attached;
+    private bool hadTwoHandsLastFrame;
 
     private bool TwoHandsOn =>
         leftHandle != null && rightHandle != null &&
@@ -46,19 +51,30 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
 
         if (xrOrigin == transform)
         {
-            Debug.LogError("WheelchairDriveWithPlayer: xrOrigin is set to the wheelchair root. " +
-                           "Assign your XR Origin (XR Rig) object instead.");
+            Debug.LogError("WheelchairDriveWithPlayer: xrOrigin is set to the wheelchair root. Assign your XR Origin (XR Rig) object instead.");
             return;
         }
 
+        bool twoHandsNow = TwoHandsOn;
+
+        if (!hadTwoHandsLastFrame && twoHandsNow)
+        {
+            if (logDebug)
+                Debug.Log("[WheelchairDriveWithPlayer] Both handles grabbed.");
+
+            OnBothHandsPlaced?.Invoke();
+        }
+
+        hadTwoHandsLastFrame = twoHandsNow;
+
         // Attach/detach player to chair based on both-hands
-        if (!attached && TwoHandsOn && xrOrigin != null)
+        if (!attached && twoHandsNow && xrOrigin != null)
         {
             originalParent = xrOrigin.parent;
-            xrOrigin.SetParent(transform, true); // player moves with chair
+            xrOrigin.SetParent(transform, true);
             attached = true;
         }
-        else if (attached && !TwoHandsOn && xrOrigin != null)
+        else if (attached && !twoHandsNow && xrOrigin != null)
         {
             xrOrigin.SetParent(originalParent, true);
             attached = false;
@@ -78,7 +94,7 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
         if (!leftDevice.TryGetFeatureValue(CommonUsages.primary2DAxis, out Vector2 stick))
             return;
 
-        float drive = stick.y; // UP = forward, DOWN = backward
+        float drive = stick.y;
         if (Mathf.Abs(drive) < deadzone) return;
 
         Vector3 dir = (forwardAxis == ForwardAxis.RightX) ? transform.right : transform.forward;
