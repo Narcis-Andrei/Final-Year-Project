@@ -6,14 +6,14 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class WheelchairDriveWithPlayer : MonoBehaviour
 {
-    [Header("Handles (Simple Interactable, one per bar)")]
+    [Header("Simple Interactable, one per bar")]
     [SerializeField] private XRSimpleInteractable leftHandle;
     [SerializeField] private XRSimpleInteractable rightHandle;
 
-    [Header("Player rig root (drag your XR Origin object here - NOT the chair)")]
+    [Header("Player rig root")]
     [SerializeField] private Transform xrOrigin;
 
-    [Header("Wheelchair root Rigidbody (optional)")]
+    [Header("Wheelchair root Rigidbody")]
     [SerializeField] private Rigidbody chairRb;
 
     [Header("Movement")]
@@ -22,7 +22,7 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
 
     public enum ForwardAxis { ForwardZ, RightX }
 
-    [Header("Which axis is 'forward' for your wheelchair model?")]
+    [Header("Forward axies for the wheelchair model")]
     [SerializeField] private ForwardAxis forwardAxis = ForwardAxis.ForwardZ;
 
     [Header("Debug")]
@@ -51,7 +51,7 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
 
         if (xrOrigin == transform)
         {
-            Debug.LogError("WheelchairDriveWithPlayer: xrOrigin is set to the wheelchair root. Assign your XR Origin (XR Rig) object instead.");
+            Debug.LogError("WheelchairDriveWithPlayer: xrOrigin is set to the wheelchair root");
             return;
         }
 
@@ -60,7 +60,7 @@ public class WheelchairDriveWithPlayer : MonoBehaviour
         if (!hadTwoHandsLastFrame && twoHandsNow)
         {
             if (logDebug)
-                Debug.Log("[WheelchairDriveWithPlayer] Both handles grabbed.");
+                Debug.Log("Both handles grabbed.");
 
             OnBothHandsPlaced?.Invoke();
         }

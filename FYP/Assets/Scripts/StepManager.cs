@@ -21,7 +21,6 @@ namespace Unity.VRTemplate
             [Min(1)] public int totalTasksRequired = 1;
 
             [Header("Progression")]
-            [Tooltip("If false, the player can press Next without finishing this stage's tasks.")]
             public bool requireTasksToAdvance = true;
 
             [Header("UI")]
@@ -45,21 +44,21 @@ namespace Unity.VRTemplate
 
         [SerializeField] private List<Step> stepList = new List<Step>();
 
-        [Header("XR Rig Root (XR Origin, NOT the camera)")]
+        [Header("XR Rig Root")]
         [SerializeField] private Transform xrOrigin;
         [SerializeField] private bool disableCharacterControllerDuringTeleport = true;
 
-        [Header("Head / Camera (used for centered teleport)")]
+        [Header("Head/Camera")]
         [SerializeField] private Transform head;
 
         [Header("Teleport Settings")]
-        [Tooltip("If true, the player's head will land exactly on the target position.")]
+        [Tooltip("If true, the player head will land exactly on the target position.")]
         [SerializeField] private bool teleportHeadExactlyToTarget = true;
 
-        [Tooltip("If true, apply the target's Y rotation when teleporting.")]
+        [Tooltip("If true, apply the target Y rotation when teleporting.")]
         [SerializeField] private bool matchTargetYaw = true;
 
-        [Header("Menu Snap (teleports with you, still movable after)")]
+        [Header("Menu Snap")]
         [SerializeField] private Transform menuRoot;
         [SerializeField] private float followDistance = 1.2f;
         [SerializeField] private float followHeightOffset = -0.2f;

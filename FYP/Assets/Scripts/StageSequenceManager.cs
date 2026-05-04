@@ -53,7 +53,7 @@ public class StageSequenceManager : MonoBehaviour
         ShowOnlyCurrentStage();
         ShowOnlyCurrentTaskArrow();
 
-        Log($"RefreshAll -> Stage {currentStageIndex}, Task {currentTaskIndex}, StageName='{GetCurrentStageName()}'");
+        Log($"RefreshAll: Stage {currentStageIndex}, Task {currentTaskIndex}, StageName='{GetCurrentStageName()}'");
     }
 
     public void CompleteCurrentTask()

@@ -50,7 +50,7 @@ public class WheelchairLiftSystem : MonoBehaviour
 
     private bool Deny(string msg)
     {
-        Debug.Log($"LIFT: Denied - {msg} (state={state})");
+        Debug.Log($"LIFT: Denied: {msg} (state={state})");
         return false;
     }
 

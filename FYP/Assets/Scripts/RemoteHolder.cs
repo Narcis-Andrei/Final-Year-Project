@@ -137,7 +137,6 @@ public class RemoteHolder : MonoBehaviour
         Log($"SELECT EXIT: {remoteTransform.name}");
 
         // Restore parent only.
-        // DO NOT restore rotation here, because the hand grab is about to take over rotation.
         remoteTransform.SetParent(originalParent, true);
 
         ForceRemoteWorldScale(remoteTransform);

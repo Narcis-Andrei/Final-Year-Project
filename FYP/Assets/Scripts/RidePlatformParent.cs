@@ -6,7 +6,7 @@ public class RidePlatformParent : MonoBehaviour
     [Header("The transform that moves")]
     [SerializeField] private Transform movingPlatform;
 
-    [Header("Your XR rig root")]
+    [Header("XR rig root")]
     [SerializeField] private Transform xrOriginRoot;
 
     [Header("CharacterController on the XR rig")]
@@ -15,7 +15,7 @@ public class RidePlatformParent : MonoBehaviour
     [Header("Only colliders on these layers can ride")]
     [SerializeField] private LayerMask riderLayers;
 
-    [Header("How close above the platform top counts as 'standing on it'")]
+    [Header("How close above the platform top counts as standing on it")]
     [SerializeField] private float maxRideHeight = 0.35f;
 
     [Header("How far outside the trigger bounds is allowed")]

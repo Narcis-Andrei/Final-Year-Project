@@ -7,17 +7,17 @@ public class StrapVisualBezier : MonoBehaviour
     [SerializeField] private Transform startAnchor;
     [SerializeField] private XRSocketInteractor endSocket;
 
-    [Tooltip("Usually your Hook transform. If set, can be used as the end position.")]
+    [Tooltip("Hook transform")]
     [SerializeField] private Transform fallbackEnd;
 
-    [Tooltip("Transform used as the strap root (often an empty GameObject).")]
+    [Tooltip("Transform used as the strap root")]
     [SerializeField] private Transform strapMesh;
 
     [Header("Strap Size (meters, world space)")]
     [SerializeField] private float forcedWidth = 0.05f;      // 5 cm
     [SerializeField] private float forcedThickness = 0.008f; // 8 mm
 
-    [Tooltip("Trim both ends by this amount (meters).")]
+    [Tooltip("Trim both ends by this amount (meters)")]
     [SerializeField] private float endOffset = 0.0f;
 
     [Header("Length Axis")]
@@ -46,7 +46,7 @@ public class StrapVisualBezier : MonoBehaviour
 
     private float nextLogTime;
 
-    // Keeps a safe direction so LookRotation never receives Vector3.zero
+    // Keep a safe direction so LookRotation never receives Vector3.zero
     private Vector3 lastValidForward = Vector3.forward;
 
     public enum Axis { X = 0, Y = 1, Z = 2 }

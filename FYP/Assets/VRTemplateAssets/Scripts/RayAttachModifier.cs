@@ -6,10 +6,6 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 namespace Unity.VRTemplate
 {
-    /// <summary>
-    /// Add this to your interactable to make it snap to the source of the XR Ray Interactor
-    /// instead of staying at a distance. Has a similar outcome as enabling Force Grab.
-    /// </summary>
     public class RayAttachModifier : MonoBehaviour
     {
         IXRSelectInteractable m_SelectInteractable;
